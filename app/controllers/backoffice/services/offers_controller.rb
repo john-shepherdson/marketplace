@@ -76,6 +76,22 @@ class Backoffice::Services::OffersController < Backoffice::ApplicationController
     render json: json
   end
 
+  # POST /backoffice/services/<service_slug>/offers/:id/duplicate
+  def duplicate
+    original_offer = @service.offers.find_by(iid: params[:offer_id])
+    new_offer = original_offer.dup
+    new_offer.iid = nil
+    new_offer.id = nil
+    new_offer.name = params["custom_form"][:new_name]
+
+    @offer = Offer::Create.call(new_offer)
+    if @offer.persisted?
+      redirect_to backoffice_service_path(@service), notice: "Offer duplicated successfully"
+    else
+      redirect_to backoffice_service_path(@service), notice: "Offer duplication errored"
+    end
+  end
+
   private
 
   def reindex_offer
